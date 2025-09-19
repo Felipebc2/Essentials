@@ -126,3 +126,7 @@ O script pode criar / modificar os seguintes itens:
   O script registra avisos se a cópia de backup falhar; verifique `/root/setup-safe-backups-<timestamp>/` e ajuste permissões se necessário.
 
 ---
+
+Este projeto está licenciado sob a MIT License.
+
+© 2025 Felipe B. Castro. Todos os direitos reservados.
