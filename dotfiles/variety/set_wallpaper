@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+# Variety "Set command": define o papel + roda Pywal + (opcional) atualiza Kitty
+
+set -uo pipefail
+
+img="${1:-}"
+mode="${2:-auto}"
+log="$HOME/.cache/variety-set_wallpaper.log"
+mkdir -p "$(dirname "$log")"
+echo "[$(date '+%F %T')] mode=${mode} img=${img:-<vazio>}" >> "$log"
+
+# --- PATH/ENV: garanta acesso aos bins de usuário/venv ---
+export PATH="$HOME/.venvs/tools/bin:$HOME/.local/bin:$PATH"
+
+# --- Localizar o wal (no PATH ou no venv informado) ---
+WAL_BIN="$(command -v wal 2>/dev/null || true)"
+if [[ -z "$WAL_BIN" && -x "$HOME/.venvs/tools/bin/wal" ]]; then
+  WAL_BIN="$HOME/.venvs/tools/bin/wal"
+fi
+if [[ -z "$WAL_BIN" ]]; then
+  echo "[$(date '+%F %T')] ERRO: wal não encontrado no PATH" >> "$log"
+fi
+
+# 1) Validar imagem
+if [[ -z "$img" || ! -f "$img" ]]; then
+  echo "[$(date '+%F %T')] ignorado: caminho inválido" >> "$log"
+  exit 1
+fi
+
+# 2) Definir wallpaper (Cinnamon/GNOME; fallback feh/xwallpaper)
+have() { command -v "$1" >/dev/null 2>&1; }
+
+set_ok=false
+if have gsettings; then
+  if gsettings list-schemas | grep -q 'org.cinnamon.desktop.background'; then
+    gsettings set org.cinnamon.desktop.background picture-uri "file://$img"         || true
+    gsettings set org.cinnamon.desktop.background picture-uri-dark "file://$img"    || true
+    set_ok=true
+  elif gsettings list-schemas | grep -q 'org.gnome.desktop.background'; then
+    gsettings set org.gnome.desktop.background picture-uri "file://$img"            || true
+    gsettings set org.gnome.desktop.background picture-uri-dark "file://$img"       || true
+    set_ok=true
+  fi
+fi
+if [[ $set_ok == false ]]; then
+  if have feh; then
+    feh --bg-fill "$img" >> "$log" 2>&1 && set_ok=true
+  elif have xwallpaper; then
+    xwallpaper --zoom "$img" >> "$log" 2>&1 && set_ok=true
+  fi
+fi
+echo "[$(date '+%F %T')] wallpaper $( [[ $set_ok == true ]] && echo 'OK' || echo 'FALHOU' )" >> "$log"
+
+# 3) Pywal: gera paleta (NÃO troca o papel)
+if [[ -n "${WAL_BIN:-}" ]]; then
+  "$WAL_BIN" -n -i "$img" >> "$log" 2>&1 \
+    && echo "[$(date '+%F %T')] wal OK" >> "$log" \
+    || echo "[$(date '+%F %T')] AVISO: wal falhou" >> "$log"
+fi
+
+# 4) Kitty (opcional)
+if command -v kitty >/dev/null 2>&1; then
+  kitty @ --to unix:/tmp/kitty set-colors -a "$HOME/.cache/wal/colors-kitty.conf" >> "$log" 2>&1 \
+    || kitty @ set-colors -a "$HOME/.cache/wal/colors-kitty.conf" >> "$log" 2>&1 \
+    || echo "[$(date '+%F %T')] AVISO: kitty set-colors falhou" >> "$log"
+fi
+
+# 5) Notificação (opcional)
+if command -v notify-send >/dev/null 2>&1; then
+  notify-send "Wallpaper aplicado + Pywal" -u low -t 1500
+fi
+
+exit 0
+

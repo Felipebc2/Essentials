@@ -1,5 +1,75 @@
+    # ====== VERSÃO ESPECIAL PARA TMUX ======
 function fish_greeting
-    set -l LEFT_COL 52
+    set -l cyan   (set_color cyan)
+    set -l normal (set_color normal)
+
+    # ====== VERSÃO ESPECIAL PARA TMUX ======
+    if set -q TMUX
+        # Knight ASCII
+        echo "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀"
+        echo "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⠶⠀⠀⠀⠀⠀⣈⣿⣦⠀⠀⠀⠀"
+        echo "⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⣿⡿⠋⠀⠀⠀⠀⠀⠹⣿⣿⡆⠀⠀⠀"
+        echo "⠀⠀⠀⠀⠀⠀⠀⠀⢰⣿⣿⣤⣤⣤⣤⣤⣄⠀⢠⣿⣿⠇⠀⠀⠀"
+        echo "⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⠀⠀⠀⠀"
+        echo "⠀⠀⠀⠀⠀⠀⠀⠀⣾⠋⠈⢻⣿⡟⠁⠀⢻⣿⣿⠋⠀⠀⠀⠀⠀"
+        echo "⠀⠀⠀⠀⠀⠀⠀ ⣿⣄⣠⣿⣿⣧⣀⣠⣿⣿⣿⠀⠀⠀⠀⠀⠀"
+        echo "⠀⠀⠀⠀⠀⠀⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⠀⠀⠀⠀⠀⠀"
+        echo "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠻⣿⣿⣿⣿⣿⣿⡿⠟⠀⣀⠀⠀⠀⠀⠀"
+        echo "⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⣿⣿⣿⣿⣿⣿⣷⡾⠿⠛⠀⠀⠀⠀⠀"
+        echo "⠀⠀⠀⠀⠀⢀⣠⣴⣿⣿⣿⣿⣿⣿⣿⣿⡿⠓⠀⠀⠀⠀⠀⠀⠀"
+        echo "⠀⠀⢀⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⣀⡀⠀⠀⠀⠀⠀"
+        echo "⠀⣰⡟⠉⣼⣿⠟⣡⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡀⠀"
+        echo "⢠⣿⠀⠀⣿⣿⣾⠿⠛⣿⣿⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡛⠻⠑⡀"
+        echo "⠈⣿⠀⡼⢿⡏⠀⠀⠀⠹⣿⡆⠉⠻⣿⣿⣿⣿⣿⡻⢿⣿⠷⠞⠁"
+        echo "⠀⢸⠇⠀⠈⡇⠀⠀⠀⠀⠘⢿⡄⠀⠸⡏⠀⠀⠉⡇⠀⠹⢦⡄⠀"
+        echo "⠀⠀⠀⠀⠈⠁⠀⠀⠀⠀⠀⠸⠁⠀⠀⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀"
+        echo
+
+        # ====== INFOS COMPLETAS ======
+        set -l user     $USER
+        set -l host     (hostname)
+        set -l distro   (grep -m1 '^PRETTY_NAME=' /etc/os-release 2>/dev/null | cut -d= -f2 | tr -d '"')
+        if test -z "$distro"; set distro (uname -s); end
+        set -l kernel   (uname -sr)
+        set -l uptime_v (uptime -p 2>/dev/null | string replace 'up ' '')
+        if test -z "$uptime_v"
+            set uptime_v (uptime | awk -F'up ' '{print $2}' | cut -d, -f1)
+        end
+        set -l shellp   $SHELL
+        set -l termn    $TERM
+        set -l tcols    (tput cols 2>/dev/null); set -l tlines (tput lines 2>/dev/null)
+        set -l termsz   "$tcols x $tlines"
+        set -l cpu (awk -F': ' '/model name/ {print $2; exit}' /proc/cpuinfo 2>/dev/null)
+        set -l mem_used (free -h | awk '/Mem:/ {print $3}')
+        set -l mem_tot  (free -h | awk '/Mem:/ {print $2}')
+        set -l mem      "$mem_used / $mem_tot"
+        set -l disk (df -h / | awk 'NR==2{print $5" ("$3"/"$2")"}')
+        set -l bat "-"
+        if type -q acpi
+            set bat (acpi -b | awk -F', ' 'NR==1{print $2}')
+        else if type -q upower
+            set bat (upower -e | grep BAT -m1 | xargs -I{} upower -i {} | awk -F': *' '/percentage/ {print $2; exit}')
+        end
+        set -l datev (date "+%a %d %b %Y %H:%M")
+
+        echo "$cyan User:$normal $user"
+        echo "$cyan Hostname:$normal $host"
+        echo "$cyan Distro:$normal $distro"
+        echo "$cyan Kernel:$normal $kernel"
+        echo "$cyan Uptime:$normal $uptime_v"
+        echo "$cyan Shell:$normal $shellp"
+        echo "$cyan Terminal:$normal $termn"
+        echo "$cyan Terminal Size:$normal $termsz"
+        echo "$cyan CPU:$normal $cpu"
+        echo "$cyan Memory:$normal $mem"
+        echo "$cyan Disk:$normal $disk"
+        echo "$cyan Battery:$normal $bat"
+        echo "$cyan Date:$normal $datev"
+        echo
+        return
+    end
+
+    # ====== VERSÃO COMPLETA (fora do tmux) ======
     set -l cyan   (set_color cyan)
     set -l normal (set_color normal)
 
@@ -11,14 +81,14 @@ function fish_greeting
 "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⣿⣿⣿⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⣿⣿⣿⡇⠀⠀⠀⠀⠀" \
 "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣁⣤⣤⣴⣶⣶⣤⣤⣄⣀⠀⠀⠀⣸⣿⣿⣿⡇⠀⠀⠀⠀⠀" \
 "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣦⣴⣿⣿⣿⣿⠁⠀⠀⠀⠀⠀" \
-"⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⡿⣿⣿⣿⣿⣿⣿⣿⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠃⠀⠀⠀⠀⠀⠀" \
-"⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⠟⠁⠀⠹⣿⣿⡟⣰⠋⠀⠀⠈⣿⣿⣿⣿⣿⠟⠁⠀⠀⠀⠀⠀⠀⠀" \
-"⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⢼⣿⠀⠀⠀⢀⣿⣿⣇⣇⠀⠀⠀⠀⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀" \
+"⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠃⠀⠀⠀⠀⠀⠀" \
+"⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⠟⠁⠀⠹⣿⣿⣿⣿⠋⠀⠀⠈⣿⣿⣿⣿⣿⠟⠁⠀⠀⠀⠀⠀⠀⠀" \
+"⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ ⢸⣿⠀⠀⠀⢀⣿⣿⣿⣇⠀⠀⠀⠀⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀" \
 "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣦⣀⣠⣾⣿⣿⣿⣿⣤⣀⣠⣾⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀" \
 "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀" \
 "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀" \
 "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠋⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀" \
-"⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⣿⣿⣿⣿⣿⣿⣿⣿⡿⣧⣀⣤⣴⣿⣿⠇⠀⠀⠀⠀⠀⠀⠀" \
+"⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⣀⣤⣴⣿⣿⠇⠀⠀⠀⠀⠀⠀⠀" \
 "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠛⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀" \
 "⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀" \
 "⠀⠀⠀⠀⠀⠀⣀⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀" \
@@ -30,15 +100,13 @@ function fish_greeting
 "⠘⢿⡇⢠⡿⠋⢹⣿⡇⠀⠀⠀⠀⠀⠀⠹⣿⣿⡆⠀⠀⠉⠻⣿⣿⡿⠿⠿⣿⣿⣷⡉⠙⢿⣿⣟⠛⠉⠁" \
 "⠀⢘⡿⠀⠀⠀⠀⣿⡇⠀⠀⠀⠀⠀⠀⠀⠘⢿⣿⡄⠀⠀⠀⢹⣿⠀⠀⠀⠀⠈⠹⣷⠀⠀⠙⢿⣆⣀⣀" \
 "⠀⠈⠁⠀⠀⠀⠀⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⡇⠀⠀⠀⠘⠿⣦⠀⠀⠀⠀⠀⠛⠀⠀⠀⠀⠉⠉⠁" \
-"⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠛⠁⠀⠀                 "
+"⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠛⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
 
-    # ====== INFOS ======
+    # ====== INFOS (direita) ======
     set -l user     $USER
     set -l host     (hostname)
     set -l distro   (grep -m1 '^PRETTY_NAME=' /etc/os-release 2>/dev/null | cut -d= -f2 | tr -d '"')
-    if test -z "$distro"
-        set distro (uname -s)
-    end
+    if test -z "$distro"; set distro (uname -s); end
     set -l kernel   (uname -sr)
     set -l uptime_v (uptime -p 2>/dev/null | string replace 'up ' '')
     if test -z "$uptime_v"
@@ -76,17 +144,43 @@ function fish_greeting
 "$cyan Battery:$normal $bat" \
 "$cyan Date:$normal $datev"
 
-    # ====== ALINHAMENTO ======
+    # ====== LAYOUT RESPONSIVO ======
+    set -l term_cols (tput cols 2>/dev/null)
+    if test -z "$term_cols"; set term_cols 120; end
+
+    # largura da arte (max length)
+    set -l art_w 0
+    for l in $art
+        set -l w (string length -- $l)
+        if test $w -gt $art_w
+            set art_w $w
+        end
+    end
+
+    set -l min_right 34
+
+    # se for estreito, empilha
+    if test $term_cols -lt (math "$art_w + $min_right + 2")
+        for l in $art; echo $l; end
+        echo
+        for l in $info; echo $l; end
+        echo
+        return
+    end
+
+    # duas colunas
+    set -l LEFT_COL (math "floor($term_cols * 0.55)")
+    if test $LEFT_COL -lt (math "$art_w + 2")
+        set LEFT_COL (math "$art_w + 2")
+    end
+
     set -l len_art  (count $art)
     set -l len_info (count $info)
     set -l maxlen $len_art
-    if test $len_info -gt $len_art
-        set maxlen $len_info
-    end
+    if test $len_info -gt $len_art; set maxlen $len_info; end
 
     for i in (seq $maxlen)
-        set -l left  ""
-        set -l right ""
+        set -l left  ""; set -l right ""
         if test $i -le $len_art;  set left  $art[$i];  end
         if test $i -le $len_info; set right $info[$i]; end
         if test -n "$right"
@@ -97,4 +191,3 @@ function fish_greeting
     end
     echo
 end
-
