@@ -60,6 +60,9 @@ alias ll="ls -la"
 alias ..="cd .."
 alias e="exit"
 alias brave="flatpak run com.brave.Browser &"
+alias firecast='wine "/home/felipebc2/.wine/drive_c/users/felipebc2/AppData/Local/Firecast/Firecast.exe"'
+alias rrpg='wine "/home/felipebc2/.wine/drive_c/users/felipebc2/AppData/Local/Firecast/Firecast.exe"'
+alias rpg='wine "/home/felipebc2/.wine/drive_c/users/felipebc2/AppData/Local/Firecast/Firecast.exe"'
 
 # ======================= PATH ======================
 set -gx PATH $HOME/.venvs/tools/bin $PATH
